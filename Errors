@@ -1,2 +1,92 @@
-python -m pip install fastapi uvicorn pydantic httpx pandas openpyxl
-python -c "import fastapi, uvicorn, pydantic, httpx, pandas, openpyxl; print('TUTTO OK')"
+.venv) PS C:\Users\SA2017752\Downloads\equipment-cost-forecast-local> python -m pip install fastapi uvicorn pydantic httpx pandas openpyxl
+Collecting fastapi                                                                          
+  Using cached fastapi-0.141.1-py3-none-any.whl.metadata (27 kB)
+Collecting uvicorn
+  Using cached uvicorn-0.52.4-py3-none-any.whl.metadata (6.6 kB)
+Collecting pydantic
+  Using cached pydantic-2.13.4-py3-none-any.whl.metadata (109 kB)
+Collecting httpx
+  Using cached httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+Collecting pandas
+  Using cached pandas-3.0.5.tar.gz (4.7 MB)
+  Installing build dependencies ... error
+  error: subprocess-exited-with-error
+  
+  × pip subprocess to install build dependencies did not run successfully.
+  │ exit code: 1
+  ╰─> [56 lines of output]
+      Collecting meson-python<1,>=0.17.1
+        Using cached meson_python-0.20.0-py3-none-any.whl.metadata (2.1 kB)
+      Collecting meson<2,>=1.2.1
+        Using cached meson-1.12.0-py3-none-any.whl.metadata (1.7 kB)
+      Collecting wheel
+        Using cached wheel-0.48.0-py3-none-any.whl.metadata (2.3 kB)
+      Collecting Cython<4,>3.1.0
+        Using cached cython-3.2.9-py3-none-any.whl.metadata (4.4 kB)
+      Collecting numpy!=2.5.0,>=2.0.0
+        Using cached numpy-2.5.2.tar.gz (20.8 MB)
+        Installing build dependencies: started
+        Installing build dependencies: finished with status 'done'
+        Getting requirements to build wheel: started
+        Getting requirements to build wheel: finished with status 'done'
+        Installing backend dependencies: started
+        Installing backend dependencies: finished with status 'done'
+        Preparing metadata (pyproject.toml): started
+        Preparing metadata (pyproject.toml): finished with status 'error'
+        error: subprocess-exited-with-error
+      
+        Preparing metadata (pyproject.toml) did not run successfully.
+        exit code: 1
+      
+        [21 lines of output]
+        + C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\.venv\Scripts\python.exe C:\Users\SA2017752\AppData\Local\Temp\pip-install-pnmv2j1d\numpy_78dc6da551c34a8f820ea7b37fc662c5\vendored-meson\meson\meson.py setup C:\Users\SA2017752\AppData\Local\Temp\pip-install-pnmv2j1d\numpy_78dc6da551c34a8f820ea7b37fc662c5 C:\Users\SA2017752\AppData\Local\Temp\pip-install-pnmv2j1d\numpy_78dc6da551c34a8f820ea7b37fc662c5\.mesonpy-azo7hfxe -Dbuildtype=release -Db_ndebug=if-release -Db_vscrt=md --native-file=C:\Users\SA2017752\AppData\Local\Temp\pip-install-pnmv2j1d\numpy_78dc6da551c34a8f820ea7b37fc662c5\.mesonpy-azo7hfxe\meson-python-native-file.ini
+        The Meson build system
+        Version: 1.11.1
+        Source dir: C:\Users\SA2017752\AppData\Local\Temp\pip-install-pnmv2j1d\numpy_78dc6da551c34a8f820ea7b37fc662c5
+        Build dir: C:\Users\SA2017752\AppData\Local\Temp\pip-install-pnmv2j1d\numpy_78dc6da551c34a8f820ea7b37fc662c5\.mesonpy-azo7hfxe
+        Build type: native build
+        WARNING: Failed to activate VS environment: Could not find C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe
+        Project name: NumPy
+        Project version: 2.5.2
+      
+        ..\meson.build:1:0: ERROR: Unknown compiler(s): [['icl'], ['cl'], ['cc'], ['gcc'], ['clang'], ['clang-cl'], ['pgcc']]
+        The following exception(s) were encountered:
+        Running `icl ""` gave "[WinError 2] Impossibile trovare il file specificato"
+        Running `cl /?` gave "[WinError 2] Impossibile trovare il file specificato"
+        Running `cc --version` gave "[WinError 2] Impossibile trovare il file specificato"
+        Running `gcc --version` gave "[WinError 2] Impossibile trovare il file specificato"
+        Running `clang --version` gave "[WinError 2] Impossibile trovare il file specificato"
+        Running `clang-cl /?` gave "[WinError 2] Impossibile trovare il file specificato"
+        Running `pgcc --version` gave "[WinError 2] Impossibile trovare il file specificato"
+      
+        A full log can be found at C:\Users\SA2017752\AppData\Local\Temp\pip-install-pnmv2j1d\numpy_78dc6da551c34a8f820ea7b37fc662c5\.mesonpy-azo7hfxe\meson-logs\meson-log.txt
+        [end of output]
+      
+        note: This error originates from a subprocess, and is likely not a problem with pip.
+      error: metadata-generation-failed
+      
+      Encountered error while generating package metadata.
+      
+      See above for output.
+      
+      note: This is an issue with the package mentioned above, not pip.
+      hint: See above for details.
+      [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+
+[notice] A new release of pip is available: 24.2 -> 26.2.1
+[notice] To update, run: python.exe -m pip install --upgrade pip
+error: subprocess-exited-with-error
+
+× pip subprocess to install build dependencies did not run successfully.
+│ exit code: 1
+╰─> See above for output.
+
+note: This error originates from a subprocess, and is likely not a problem with pip.
+(.venv) PS C:\Users\SA2017752\Downloads\equipment-cost-forecast-local> python -c "import fastapi, uvicorn, pydantic, httpx, pandas, openpyxl; print('TUTTO OK')"
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import fastapi, uvicorn, pydantic, httpx, pandas, openpyxl; print('TUTTO OK')
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'fastapi'
