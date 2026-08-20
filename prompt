@@ -2,7 +2,7 @@ Devi modificare l'applicazione EPC Equipment Parametric Cost Estimation affinch�
 
 QUESTO REQUISITO È OBBLIGATORIO.
 
-L'obiettivo è ottenere una web application utilizzabile interamente da localhost tramite VS Code e Python.
+L'obiettivo è ottenere una web application utilizzabile interamente da localhost tramite VS Code e Python senza perdere nessuna funzionalità.
 
 ==================================================
 REQUISITO FONDAMENTALE
