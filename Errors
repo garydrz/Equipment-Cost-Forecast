@@ -1,12 +1,2 @@
-(.venv) PS C:\Users\SA2017752\Downloads\equipment-cost-forecast-local> python --version
-Python 3.13.0
-(.venv) PS C:\Users\SA2017752\Downloads\equipment-cost-forecast-local> python -c "import sys; print(sys.executable)"
-C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\.venv\Scripts\python.exe
-(.venv) PS C:\Users\SA2017752\Downloads\equipment-cost-forecast-local> python -m pip --version
-pip 24.2 from C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\.venv\Lib\site-packages\pip (python 3.13)
-(.venv) PS C:\Users\SA2017752\Downloads\equipment-cost-forecast-local> python -c "import fastapi; print(fastapi.__file__)"
-Traceback (most recent call last):
-  File "<string>", line 1, in <module>
-    import fastapi; print(fastapi.__file__)
-    ^^^^^^^^^^^^^^
-ModuleNotFoundError: No module named 'fastapi'
+python -m pip install fastapi uvicorn pydantic httpx pandas openpyxl
+python -c "import fastapi, uvicorn, pydantic, httpx, pandas, openpyxl; print('TUTTO OK')"
