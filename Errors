@@ -1,8 +1,9 @@
-(.venv) PS C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\frontend> yarn --version
-yarn : Termine 'yarn' non riconosciuto come nome di cmdlet, funzione, programma eseguibile o file script. 
-Controllare l'ortografia del nome o verificare che il percorso sia incluso e corretto, quindi riprovare.
+(.venv) PS C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\frontend> corepack enable
+corepack : Termine 'corepack' non riconosciuto come nome di cmdlet, funzione, programma eseguibile o file 
+script. Controllare l'ortografia del nome o verificare che il percorso sia incluso e corretto, quindi 
+riprovare.
 In riga:1 car:1
-+ yarn --version
-+ ~~~~
-    + CategoryInfo          : ObjectNotFound: (yarn:String) [], CommandNotFoundException
++ corepack enable
++ ~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (corepack:String) [], CommandNotFoundException
     + FullyQualifiedErrorId : CommandNotFoundException
