@@ -1,0 +1,459 @@
+Devi modificare l'applicazione EPC Equipment Parametric Cost Estimation affinché diventi una soluzione completamente locale, self-contained e indipendente da qualunque infrastruttura esterna.
+
+QUESTO REQUISITO È OBBLIGATORIO.
+
+L'obiettivo è ottenere una web application utilizzabile interamente da localhost tramite VS Code e Python.
+
+==================================================
+REQUISITO FONDAMENTALE
+==================================================
+
+L'applicazione NON deve richiedere alcun software terzo installato.
+
+L'utente deve installare esclusivamente:
+
+- Python
+- librerie contenute in requirements.txt
+
+NON devono essere richiesti:
+
+- MongoDB
+- PostgreSQL
+- MySQL
+- MariaDB
+- SQL Server
+- Oracle
+- Docker
+- Kubernetes
+- Node.js installato separatamente
+- servizi cloud
+- database remoti
+- server remoti
+- account esterni
+- registrazioni
+- autenticazioni cloud
+- software aggiuntivi
+
+L'applicazione deve essere completamente self-contained.
+
+==================================================
+ARCHITETTURA TARGET
+==================================================
+
+Mantenere:
+
+Frontend
+Backend
+
+come moduli distinti.
+
+Ma l'utente finale deve poter lanciare tutto con:
+
+python main.py
+
+oppure equivalente.
+
+L'applicazione deve:
+
+1. verificare le dipendenze
+2. creare il database locale se assente
+3. avviare backend
+4. avviare frontend
+5. aprire browser
+6. rendere disponibile l'app su localhost
+
+senza ulteriori operazioni.
+
+==================================================
+DATABASE
+==================================================
+
+MongoDB deve essere eliminato completamente.
+
+NON è consentito utilizzare:
+
+- MongoDB Atlas
+- MongoDB locale
+- Docker MongoDB
+- qualunque istanza MongoDB
+
+Rimuovere completamente:
+
+- motor
+- pymongo
+- AsyncIOMotorClient
+- MONGO_URL
+- collection Mongo
+- query Mongo
+
+Tutta la persistenza deve essere gestita con:
+
+SQLite
+
+integrata direttamente nell'applicazione.
+
+Utilizzare:
+
+- sqlite3
+oppure
+- SQLAlchemy con backend SQLite
+
+Il database deve essere creato automaticamente al primo avvio.
+
+File richiesto:
+
+data/epc_estimator.db
+
+oppure equivalente.
+
+L'utente non deve installare alcun database.
+
+==================================================
+DATI LOCALI
+==================================================
+
+Tutti i dati devono rimanere esclusivamente sul PC locale.
+
+Devono essere memorizzati localmente:
+
+- historical equipment
+- projects
+- project rows
+- stime
+- risultati
+- settings
+- material factors
+- pressure factors
+- similarity settings
+- confidence settings
+- pump settings
+- subtype settings
+- cache
+
+Nessun dato deve essere trasmesso all'esterno.
+
+==================================================
+POLITICA PRIVACY
+==================================================
+
+Nessun dato inserito dall'utente deve lasciare il PC.
+
+Non è consentito:
+
+- telemetria
+- analytics
+- tracking
+- logging remoto
+- sincronizzazione cloud
+- backup cloud
+- upload automatici
+- servizi SaaS
+
+Qualunque dato di progetto deve rimanere esclusivamente locale.
+
+==================================================
+UNICHE ECCEZIONI CONSENTITE
+==================================================
+
+Sono consentite esclusivamente chiamate HTTP verso:
+
+- FRED
+- Frankfurter FX
+
+e soltanto per:
+
+- economic indices
+- exchange rates
+
+Nessun'altra connessione esterna deve essere possibile.
+
+Implementare whitelist obbligatoria.
+
+Se una chiamata tenta di raggiungere un dominio differente:
+
+- bloccarla
+- loggare l'evento
+- non eseguire la richiesta
+
+==================================================
+MODALITÀ OFFLINE
+==================================================
+
+Implementare modalità Offline.
+
+Quando Offline è attiva:
+
+nessuna connessione esterna.
+
+L'app deve continuare a funzionare.
+
+Creare cache locale per:
+
+- FRED
+- Frankfurter FX
+
+Cartella:
+
+data/cache/
+
+File:
+
+- fred_cache.json
+- fx_cache.json
+
+Se i servizi non sono raggiungibili:
+
+usare automaticamente:
+
+- cache
+oppure
+- fallback locali
+
+senza interrompere il funzionamento.
+
+==================================================
+ORGANIZZAZIONE FILE
+==================================================
+
+Struttura richiesta:
+
+project_root/
+
+main.py
+
+frontend/
+
+backend/
+
+data/
+
+data/cache/
+
+data/backups/
+
+logs/
+
+config/
+
+requirements.txt
+
+README.md
+
+==================================================
+BACKUP
+==================================================
+
+Implementare backup locale.
+
+Il backup deve consistere nella copia del database SQLite.
+
+Funzioni richieste:
+
+- Create Backup
+- Restore Backup
+
+I backup devono essere salvati in:
+
+data/backups/
+
+Formato:
+
+- db
+oppure
+- zip
+
+Nessun backup remoto.
+
+==================================================
+CONFIGURAZIONE
+==================================================
+
+Creare:
+
+config/app_config.json
+
+contenente almeno:
+
+- database path
+- offline mode
+- application ports
+- cache settings
+- backup settings
+
+Configurazione locale modificabile.
+
+==================================================
+FRONTEND
+==================================================
+
+Il frontend deve funzionare completamente in locale.
+
+Non utilizzare:
+
+- hosting esterni
+- CDN esterni
+- javascript caricati da Internet
+- font remoti
+
+Tutte le dipendenze devono essere distribuite insieme al progetto.
+
+Qualunque asset deve essere locale.
+
+==================================================
+BACKEND
+==================================================
+
+Il backend deve funzionare completamente in locale.
+
+Non utilizzare:
+
+- servizi cloud
+- servizi database esterni
+- broker esterni
+- storage esterni
+
+Tutte le API devono essere locali.
+
+==================================================
+PORTA E ACCESSO
+==================================================
+
+L'applicazione deve essere accessibile tramite:
+
+http://localhost
+
+oppure
+
+http://localhost:8000
+
+La configurazione deve essere automatica.
+
+L'utente non deve modificare codice per avviare l'app.
+
+==================================================
+IMPORT / EXPORT
+==================================================
+
+Implementare:
+
+Import CSV
+
+per:
+
+- equipment storici
+- stime
+- progetti
+
+Export CSV
+
+per:
+
+- equipment storici
+- risultati
+
+Export Excel
+
+per:
+
+- stime
+- progetti
+
+Tutto salvato localmente.
+
+==================================================
+LOGGING
+==================================================
+
+Creare:
+
+logs/
+
+con:
+
+- startup.log
+- backend.log
+- frontend.log
+
+Rotazione automatica.
+
+Nessun logging remoto.
+
+==================================================
+STATUS PAGE
+==================================================
+
+Aggiungere pagina:
+
+System Status
+
+con:
+
+- database path
+- database size
+- cache status
+- offline mode
+- backup status
+- FRED status
+- FX status
+
+==================================================
+INSTALLAZIONE
+==================================================
+
+L'intera procedura deve essere:
+
+1. clonare o copiare la cartella
+2. aprire VS Code
+3. creare virtual environment
+4. pip install -r requirements.txt
+5. python main.py
+
+Fine.
+
+Non devono essere richiesti ulteriori passaggi.
+
+==================================================
+TEST DI ACCETTAZIONE
+==================================================
+
+Verificare:
+
+- primo avvio senza database
+- creazione automatica SQLite
+- CRUD equipment
+- CRUD projects
+- CRUD settings
+- backup
+- restore
+- export CSV
+- export Excel
+- modalità offline
+- modalità online
+- cache locale
+- frontend funzionante
+- backend funzionante
+- localhost funzionante
+- nessun software aggiuntivo installato
+
+==================================================
+CRITERIO FINALE
+==================================================
+
+L'applicazione deve essere completamente utilizzabile su un PC Windows con soltanto:
+
+- Python
+- requirements.txt
+
+Tutti i dati devono essere memorizzati localmente.
+
+Tutti i progetti devono essere memorizzati localmente.
+
+Tutte le configurazioni devono essere memorizzate localmente.
+
+Il database deve essere SQLite.
+
+Non deve esistere alcuna dipendenza operativa da software terzi.
+
+Non deve essere necessario installare server, database o applicazioni aggiuntive.
+
+L'app deve funzionare integralmente in localhost, essere completamente offline-ready e non consentire la fuoriuscita dei dati di progetto all'esterno del PC.
