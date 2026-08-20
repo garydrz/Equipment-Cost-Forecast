@@ -5,6 +5,7 @@ import ProjectDetail from "@/pages/ProjectDetail";
 import Repository from "@/pages/Repository";
 import Admin from "@/pages/Admin";
 import Indices from "@/pages/Indices";
+import SystemStatus from "@/pages/SystemStatus";
 import { Toaster } from "@/components/ui/sonner";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
             <Route path="/repository" element={<Repository />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/indices" element={<Indices />} />
+            <Route path="/system" element={<SystemStatus />} />
           </Routes>
         </main>
       </div>

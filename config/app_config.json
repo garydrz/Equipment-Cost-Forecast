@@ -1,0 +1,33 @@
+{
+  "database": {
+    "path": "data/epc_estimator.db"
+  },
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8000,
+    "open_browser": true
+  },
+  "network": {
+    "offline_mode": false,
+    "allowed_hosts": [
+      "api.stlouisfed.org",
+      "api.frankfurter.dev",
+      "api.frankfurter.app"
+    ]
+  },
+  "cache": {
+    "fred_ttl_seconds": 21600,
+    "fx_ttl_seconds": 604800
+  },
+  "backup": {
+    "keep_last": 20
+  },
+  "logging": {
+    "level": "INFO",
+    "max_bytes": 2000000,
+    "backup_count": 5
+  },
+  "fred": {
+    "api_key": "6d2c53615d6f7ec0638979a8cd48aab7"
+  }
+}

@@ -1,11 +1,12 @@
 import { NavLink } from "react-router-dom";
-import { GridFour, Database, Sliders, TrendUp } from "@phosphor-icons/react";
+import { GridFour, Database, Sliders, TrendUp, Gauge } from "@phosphor-icons/react";
 
 const items = [
   { to: "/", label: "Projects", icon: GridFour, id: "nav-projects" },
   { to: "/repository", label: "Historical Repository", icon: Database, id: "nav-repository" },
   { to: "/admin", label: "Admin Parameters", icon: Sliders, id: "nav-admin" },
   { to: "/indices", label: "Indices", icon: TrendUp, id: "nav-indices" },
+  { to: "/system", label: "System Status", icon: Gauge, id: "nav-system" },
 ];
 
 export default function Sidebar() {

@@ -1,7 +1,10 @@
 import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-export const API = `${BACKEND_URL}/api`;
+// When REACT_APP_BACKEND_URL is defined we're behind a proxy (preview).
+// When empty (local `python main.py` build) we hit the FastAPI process
+// serving both the SPA and the API on the same origin.
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+export const API = BACKEND_URL ? `${BACKEND_URL}/api` : "/api";
 export const api = axios.create({ baseURL: API });
 
 export const CAT_LABELS = {

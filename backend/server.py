@@ -13,30 +13,51 @@ Key changes vs v2:
 - Project range from aggregated sigma with rho_quantity + rho_between_rows
 - Human-readable "How the estimate was calculated" report
 """
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Body
+from fastapi.responses import JSONResponse, Response, FileResponse
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import re
 import logging
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Literal, Any, Dict, Tuple
 import uuid
 from datetime import datetime, timezone
 import math
-import httpx
 import asyncio
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# Local, self-contained infrastructure
+from db import Database
+from local_config import CONFIG, LOG_DIR, FRONTEND_BUILD_DIR, save_config
+import net as netmod
+import backup as backupmod
+import importexport as ie
 
-FRED_API_KEY = os.environ.get('FRED_API_KEY', '')
+# ---- Configure rotating file logging -----------------------------------------
+_LOG_LEVEL = getattr(logging, str(CONFIG["logging"].get("level", "INFO")).upper(), logging.INFO)
+_root_logger = logging.getLogger()
+if not any(isinstance(h, RotatingFileHandler) for h in _root_logger.handlers):
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    _fh = RotatingFileHandler(
+        LOG_DIR / "backend.log",
+        maxBytes=int(CONFIG["logging"].get("max_bytes", 2_000_000)),
+        backupCount=int(CONFIG["logging"].get("backup_count", 5)),
+        encoding="utf-8",
+    )
+    _fh.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+    _root_logger.addHandler(_fh)
+_root_logger.setLevel(_LOG_LEVEL)
+
+db = Database(CONFIG["database"]["_resolved_path"])
+
+FRED_API_KEY = CONFIG.get("fred", {}).get("api_key", "") or os.environ.get("FRED_API_KEY", "")
 
 MODEL_VERSION = "weighted_similarity_v3"
 
@@ -521,25 +542,35 @@ _indices_cache = {"steel": None, "oil": None, "ts": 0.0, "source": None}
 _indices_lock = asyncio.Lock()
 
 async def fetch_fred_annual(series_id: str) -> dict:
-    if not FRED_API_KEY:
-        return {}
-    url = "https://api.stlouisfed.org/fred/series/observations"
-    params = {"series_id": series_id, "api_key": FRED_API_KEY, "file_type": "json",
-              "frequency": "a", "aggregation_method": "avg", "observation_start": "2000-01-01"}
-    try:
-        async with httpx.AsyncClient(timeout=15) as c:
-            r = await c.get(url, params=params); r.raise_for_status()
-            data = r.json()
-        out = {}
-        for obs in data.get("observations", []):
-            try:
-                y = int(obs["date"][:4]); v = float(obs["value"]); out[y] = v
-            except (ValueError, KeyError):
-                continue
-        return out
-    except Exception as e:
-        logging.warning(f"FRED fetch failed for {series_id}: {e}")
-        return {}
+    """Fetch FRED annual series through the whitelist + persistent cache.
+
+    Priority: fresh network → cached value → empty dict. In offline mode
+    only cached values are returned.
+    """
+    # 1) try cache (fresh)
+    cached = netmod.fred_cache_get(series_id)
+    if cached and not cached.get("expired"):
+        return {int(k): float(v) for k, v in cached.get("values", {}).items()}
+    # 2) try network
+    if FRED_API_KEY and not netmod.is_offline():
+        url = "https://api.stlouisfed.org/fred/series/observations"
+        params = {"series_id": series_id, "api_key": FRED_API_KEY, "file_type": "json",
+                  "frequency": "a", "aggregation_method": "avg", "observation_start": "2000-01-01"}
+        data = await netmod.safe_get(url, params=params, timeout=15)
+        if data:
+            out: Dict[int, float] = {}
+            for obs in data.get("observations", []):
+                try:
+                    y = int(obs["date"][:4]); v = float(obs["value"]); out[y] = v
+                except (ValueError, KeyError):
+                    continue
+            if out:
+                netmod.fred_cache_put(series_id, out)
+                return out
+    # 3) fall back to (possibly expired) cache
+    if cached:
+        return {int(k): float(v) for k, v in cached.get("values", {}).items()}
+    return {}
 
 async def get_indices():
     now = datetime.now(timezone.utc).timestamp()
@@ -578,22 +609,31 @@ def compute_escalation_sync(from_year: int, to_year: int, steel_w: float, oil_w:
 # ============================================================
 # FX
 # ============================================================
-_fx_cache: Dict[str, float] = {}
+_fx_mem_cache: Dict[str, float] = {}
 
 async def fx_rate(base: str, target: str, date: Optional[str] = None) -> Tuple[float, bool]:
-    if base == target: return 1.0, False
+    """Return (rate, is_fallback). Uses in-memory then persistent cache,
+    then a whitelisted network call. In offline mode only caches are used."""
+    if base == target:
+        return 1.0, False
     date_key = date or "latest"
     key = f"{base}-{target}-{date_key}"
-    if key in _fx_cache: return _fx_cache[key], False
-    url = f"https://api.frankfurter.dev/v1/{date_key}"
-    try:
-        async with httpx.AsyncClient(timeout=10) as c:
-            r = await c.get(url, params={"base": base, "symbols": target}); r.raise_for_status()
-            data = r.json()
-        rate = float(data["rates"][target]); _fx_cache[key] = rate; return rate, False
-    except Exception as e:
-        logging.warning(f"FX fetch failed {base}->{target} {date_key}: {e}")
-        return (1.08 if base == "EUR" and target == "USD" else 0.92), True
+    if key in _fx_mem_cache:
+        return _fx_mem_cache[key], False
+    cached_rate = netmod.fx_cache_get(key)
+    if cached_rate is not None:
+        _fx_mem_cache[key] = cached_rate
+        return cached_rate, False
+    if not netmod.is_offline():
+        url = f"https://api.frankfurter.dev/v1/{date_key}"
+        data = await netmod.safe_get(url, params={"base": base, "symbols": target}, timeout=10)
+        if data and "rates" in data and target in data["rates"]:
+            rate = float(data["rates"][target])
+            _fx_mem_cache[key] = rate
+            netmod.fx_cache_put(key, rate)
+            return rate, False
+    # fallback
+    return (1.08 if base == "EUR" and target == "USD" else 0.92), True
 
 async def batch_fx_rates(pairs):
     unique = list(set(pairs))
@@ -1852,14 +1892,166 @@ async def seed_data():
             await db.equipment_rows.insert_one(rdoc)
 
 # ============================================================
+# LOCAL / SELF-CONTAINED ENDPOINTS (status, backup, import/export)
+# ============================================================
+@api_router.get("/system/status")
+async def system_status():
+    dbp = Path(CONFIG["database"]["_resolved_path"])
+    fred_summary = netmod.cache_summary()
+    steel, oil, src = await get_indices()
+    return {
+        "database": {"path": str(dbp), "exists": dbp.exists(), "size_bytes": db.file_size()},
+        "config_file": str(CONFIG.get("_config_file") or (Path(__file__).resolve().parent.parent / "config" / "app_config.json")),
+        "offline_mode": netmod.is_offline(),
+        "network_allowed_hosts": CONFIG["network"].get("allowed_hosts", []),
+        "cache": fred_summary,
+        "backup": {"count": len(backupmod.list_backups()), "dir": str((Path(__file__).resolve().parent.parent / "data" / "backups"))},
+        "fred_status": {"api_key_present": bool(FRED_API_KEY), "last_source": src,
+                        "steel_series_years": len(steel), "oil_series_years": len(oil)},
+        "fx_status": {"pairs_cached": fred_summary["fx_pairs_cached"]},
+        "model_version": MODEL_VERSION,
+    }
+
+
+class OfflineToggle(BaseModel):
+    offline_mode: bool
+
+@api_router.get("/system/offline-mode")
+async def get_offline_mode():
+    return {"offline_mode": netmod.is_offline()}
+
+@api_router.put("/system/offline-mode")
+async def set_offline_mode(body: OfflineToggle):
+    CONFIG["network"]["offline_mode"] = bool(body.offline_mode)
+    save_config(CONFIG)
+    return {"offline_mode": netmod.is_offline()}
+
+
+@api_router.get("/system/backups")
+async def list_backups_endpoint():
+    return {"backups": backupmod.list_backups()}
+
+@api_router.post("/system/backups")
+async def create_backup_endpoint():
+    return backupmod.create_backup()
+
+@api_router.post("/system/backups/{filename}/restore")
+async def restore_backup_endpoint(filename: str):
+    try:
+        result = backupmod.restore_backup(filename)
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e))
+    return {"ok": True, **result}
+
+@api_router.delete("/system/backups/{filename}")
+async def delete_backup_endpoint(filename: str):
+    try:
+        backupmod.delete_backup(filename)
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e))
+    return {"deleted": True}
+
+
+# ---- Import / Export --------------------------------------------------------
+@api_router.get("/equipment/export.csv")
+async def export_equipment_csv(category: Optional[str] = None):
+    q: Dict[str, Any] = {}
+    if category:
+        q["category"] = category
+    docs = await db.equipment_historical.find(q).to_list(10000)
+    text = ie.to_csv(docs, ie.HISTORICAL_COLUMNS)
+    return Response(content=text, media_type="text/csv",
+                    headers={"Content-Disposition": 'attachment; filename="historical_equipment.csv"'})
+
+@api_router.get("/equipment/export.xlsx")
+async def export_equipment_xlsx(category: Optional[str] = None):
+    q: Dict[str, Any] = {}
+    if category:
+        q["category"] = category
+    docs = await db.equipment_historical.find(q).to_list(10000)
+    data = ie.historical_to_excel_bytes(docs)
+    return Response(content=data,
+                    media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": 'attachment; filename="historical_equipment.xlsx"'})
+
+@api_router.post("/equipment/import.csv")
+async def import_equipment_csv(file: UploadFile = File(...)):
+    raw = (await file.read()).decode("utf-8", errors="ignore")
+    rows = ie.parse_csv(raw)
+    inserted = 0
+    errors: List[Dict[str, Any]] = []
+    for idx, r in enumerate(rows):
+        try:
+            payload = ie.normalize_historical(r)
+            body = HistoricalEquipmentCreate(**payload)
+            if body.category not in CATEGORY_META:
+                raise ValueError(f"invalid category '{body.category}'")
+            canonical = validate_subtype(body.category, body.subtype)
+            data = body.model_dump()
+            data["subtype"] = canonical
+            if not data.get("size_unit"):
+                data["size_unit"] = CATEGORY_META[body.category]["size_unit"]
+            obj = HistoricalEquipment(**data)
+            doc = obj.model_dump(); doc["created_at"] = doc["created_at"].isoformat()
+            await db.equipment_historical.insert_one(doc)
+            inserted += 1
+        except Exception as e:
+            errors.append({"row_index": idx, "error": str(e), "data": r})
+    return {"inserted": inserted, "errors": errors, "total_rows": len(rows)}
+
+
+@api_router.get("/projects/{pid}/export.csv")
+async def export_project_csv(pid: str):
+    p = await db.projects.find_one({"id": pid})
+    if not p:
+        raise HTTPException(404, "Project not found")
+    rows = await db.equipment_rows.find({"project_id": pid}).to_list(5000)
+    text = ie.to_csv(rows, ie.ROW_COLUMNS)
+    return Response(content=text, media_type="text/csv",
+                    headers={"Content-Disposition": f'attachment; filename="project_{pid[:8]}_rows.csv"'})
+
+@api_router.get("/projects/{pid}/export.xlsx")
+async def export_project_xlsx(pid: str):
+    p = await db.projects.find_one({"id": pid})
+    if not p:
+        raise HTTPException(404, "Project not found")
+    rows = await db.equipment_rows.find({"project_id": pid}).to_list(5000)
+    sim = await get_similarity_config()
+    totals = _aggregate_project(rows, sim)
+    data = ie.project_to_excel_bytes(p, rows, totals)
+    return Response(content=data,
+                    media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": f'attachment; filename="project_{pid[:8]}.xlsx"'})
+
+
+# ============================================================
 # APP SETUP
 # ============================================================
 app.include_router(api_router)
 app.add_middleware(CORSMiddleware, allow_credentials=True,
     allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','), allow_methods=["*"], allow_headers=["*"])
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# Serve the built React frontend as static files when present. This lets
+# `python main.py` deliver the whole app from a single uvicorn process
+# without any external web server.
+if FRONTEND_BUILD_DIR.exists() and (FRONTEND_BUILD_DIR / "index.html").exists():
+    app.mount("/static", StaticFiles(directory=FRONTEND_BUILD_DIR / "static"), name="static")
+
+    @app.get("/", include_in_schema=False)
+    async def _spa_root():
+        return FileResponse(FRONTEND_BUILD_DIR / "index.html")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def _spa_catchall(full_path: str):
+        # Do not intercept /api/*
+        if full_path.startswith("api"):
+            raise HTTPException(404, "Not found")
+        candidate = FRONTEND_BUILD_DIR / full_path
+        if candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(FRONTEND_BUILD_DIR / "index.html")
 
 @app.on_event("startup")
 async def on_startup():
@@ -1873,7 +2065,6 @@ async def on_startup():
                     {"_id": "singleton"},
                     {"$unset": {k: "" for k in legacy_keys}}
                 )
-                # if the stored weights don't sum to 1, reset to defaults
                 ws = float(doc.get("w_size", 0) or 0) + float(doc.get("w_material", 0) or 0) + float(doc.get("w_pressure", 0) or 0)
                 if abs(ws - 1.0) > 0.01:
                     await db.similarity_config.update_one(
@@ -1888,7 +2079,3 @@ async def on_startup():
         await seed_data()
     except Exception as e:
         logger.exception(f"Seed failed: {e}")
-
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
