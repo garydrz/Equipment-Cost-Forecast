@@ -1,0 +1,28 @@
+{
+  "summary": "Backend smoke + integration test for EPC parametric cost estimator. All 15 requested backend behaviors verified against public URL. FRED integration is live (source=FRED, 26 years of steel & oil). Currency conversion (Frankfurter) works. AACE class transitions verified (5->4->3 with reference counts). Statistical propagation for project totals confirmed (proj half-range < sum of row half-ranges).",
+  "tested_scope": ["backend", "integration"],
+  "passed": [
+    "GET /api/meta/categories -> 9 categories, meta with default_n/steel_w/oil_w, 6 materials",
+    "GET /api/equipment -> 13 preloaded records; ?category=pump filters correctly; ?q=centrifugal returns 3 matches",
+    "POST/PUT/DELETE /api/equipment lifecycle (field name is cost_original, not cost)",
+    "GET /api/projects -> DUMMY project seeded",
+    "POST /api/projects + GET /api/projects/{id} returns {project, rows, totals} with expected/low/high/sigma/aace_class",
+    "POST /api/projects/{id}/rows for pump (with power_kw) -> unit_expected=60741.25, unit_low/high, total_expected=unit*qty, references_used=2, escalation=1.263, aace=Class 5",
+    "POST rows for valve (no power) -> unit_expected=9775.61, total=48878.05 (5x)",
+    "PUT /api/projects/{pid}/rows/{rid} recomputes on update; DELETE removes row",
+    "POST /api/projects/{id}/recompute -> {ok:true, updated:2}",
+    "POST /api/estimate returns expected/low/high/aace_class/references_used/escalation_factor + total_* fields scaled by quantity (ratio total/unit == quantity)",
+    "GET /api/admin/scale-exponents -> 9 categories with n and default_n; PUT updates and GET reflects change",
+    "GET /api/admin/escalation-weights -> 9 categories with steel_weight/oil_weight/defaults; PUT updates",
+    "GET /api/indices -> source='FRED', 26 years for both steel_by_year and oil_by_year (FRED_API_KEY working)",
+    "Currency conversion: USD 100000 historical @ 2024 -> EUR estimate 93580 (ratio 0.9358, within 0.85-1.0 expected)",
+    "AACE class logic: 0 refs -> Class 5; 3 refs -> Class 4; 5 refs (seeded) -> Class 3",
+    "Project totals statistical propagation: sum(row_expected)=proj.expected (170360.55); proj half-range 85115.41 < sum of row half-ranges 85180.27 (quadrature sum confirmed); proj.aace_class = worst of row classes"
+  ],
+  "failed": [],
+  "action_items": [],
+  "success_rate": {"backend": "100%", "frontend": "not tested (backend-only per request)"},
+  "retest_needed": false,
+  "full_testing_deferred": true,
+  "notes": "All test data cleaned up. Backend field naming: HistoricalEquipment uses cost_original (not cost) - this is the correct schema. Frontend should send cost_original in POST/PUT bodies."
+}

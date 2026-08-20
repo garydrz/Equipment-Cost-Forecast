@@ -1,0 +1,90 @@
+{
+  "theme": "Light mode default (with dark mode support). Archetype 4: Swiss & High-Contrast (Authority, Clarity, Truth).",
+  "typography": {
+    "font_family": {
+      "headings": "IBM Plex Sans, sans-serif",
+      "body": "Inter, sans-serif",
+      "mono": "IBM Plex Mono, monospace"
+    },
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl font-semibold tracking-tight text-slate-900",
+      "h2": "text-2xl sm:text-3xl font-medium tracking-tight text-slate-900",
+      "h3": "text-xl font-medium text-slate-900",
+      "h4": "text-lg font-medium text-slate-900",
+      "body": "text-sm text-slate-700 leading-relaxed",
+      "labels": "text-xs font-semibold uppercase tracking-[0.2em] text-slate-500",
+      "data_numbers": "font-mono text-sm tracking-tight"
+    },
+    "rules": [
+      "NEVER use Inter for headings.",
+      "Use IBM Plex Mono for all financial values, estimates, confidence intervals, and technical specifications (pressure, temp, power).",
+      "Headlines must use tracking-tight."
+    ]
+  },
+  "colors": {
+    "background": {
+      "main": "#FFFFFF",
+      "surface": "#F8FAFC",
+      "surface_alt": "#F1F5F9"
+    },
+    "text": {
+      "primary": "#0F172A",
+      "secondary": "#475569",
+      "tertiary": "#94A3B8"
+    },
+    "border": "#E2E8F0",
+    "accents": {
+      "primary": "#002FA7", 
+      "primary_hover": "#002480",
+      "warning": "#F59E0B",
+      "danger": "#DC2626",
+      "success": "#16A34A"
+    },
+    "rules": [
+      "Color is Function Only. 95% of the UI should be monochrome.",
+      "Primary accent (Klein Blue) used strictly for primary actions, active tabs, and key highlights.",
+      "Ensure minimum 4.5:1 contrast ratio for all text."
+    ]
+  },
+  "layouts": {
+    "general": "High Density Grid (Mode B). Dense and compact spacing for data-heavy views.",
+    "spacing_scale": "p-2, p-4, p-6, p-8. Internal padding for cards should be p-4 or p-6.",
+    "navigation": "Collapsible left sidebar for main navigation (Projects, Repository, Admin Panel). Sticky top header for contextual actions (Currency Toggle, Add Row).",
+    "tables": "Use dense tables with sticky headers. Columns must be well-aligned (numbers right-aligned, text left-aligned).",
+    "grid_borders": "The Technical Look: Expose the skeleton. Use 1px borders (border-border) with no border-radius (rounded-none or max rounded-sm) to feel like a precise engineering tool. No soft shadows."
+  },
+  "components": {
+    "cards": "Flat background, 1px subtle border, NO SHADOW. Hover state: border color darkens, slight background tint.",
+    "buttons": "Sharp corners (rounded-none or rounded-sm). Primary button: solid Klein Blue. Secondary: solid surface color with border.",
+    "inputs": "Shadcn inputs customized to have sharp corners, 1px borders, subtle focus ring.",
+    "tables": "Shadcn Table component. Row hover effect must be subtle (bg-slate-50). Data cells use font-mono where appropriate.",
+    "badges": "Use sharp, bordered badges for AACE Class (e.g., Class 3: Green border, Class 4: Yellow border, Class 5: Gray border).",
+    "dialogs": "Solid background (no glassmorphism for medical/engineering apps), stark contrast, sharp borders."
+  },
+  "motion": {
+    "micro_interactions": "Minimalist. Hover states change background/border color. No bouncy or playful animations.",
+    "transitions": "Fast and precise (duration-150 ease-out)."
+  },
+  "visual_enhancers": {
+    "surfaces": "Grid Borders: expose the grid. Container items have right and bottom borders. Use 'The Technical Look'.",
+    "icons": "Phosphor Icons (dense, readable at small sizes)."
+  },
+  "image_urls": {},
+  "instructions_to_main_agent": [
+    "Build the UI with pure HTML/Tailwind for layouts, and heavily customized Shadcn UI for interactive components.",
+    "Implement the 'Technical Look': replace all rounded-md and shadow-sm defaults in Shadcn with rounded-none and 1px sharp borders.",
+    "Use Phosphor Icons via @phosphor-icons/react. Install: yarn add @phosphor-icons/react",
+    "Data table rows in the Project Detail view must be highly dense to allow editing multiple properties (Capacity, Pressure, Temp, etc.) inline without excessive scrolling.",
+    "Use a left sidebar for primary navigation (Dashboard, Repository, Admin) and a sticky top header for view-specific actions (e.g., 'Add Equipment', 'Currency: EUR/USD').",
+    "For the Project Detail view, use a Bento-style summary at the top (Total Cost, Confidence Interval, AACE Class) and a dense data table below for the equipment rows.",
+    "All financial values and statistical outputs must use the IBM Plex Mono font."
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "Do not use generic centered layouts. Left-align dense content.",
+    "Create depth through 1px crisp borders, not soft shadows.",
+    "Never apply universal 'transition: all'. Add transitions explicitly.",
+    "Do not center-align the app container.",
+    "Ensure all interactive elements have hover states (e.g., hover:bg-slate-100 hover:text-slate-900).",
+    "Include 'data-testid' on all buttons, inputs, and key UI elements."
+  ]
+}
