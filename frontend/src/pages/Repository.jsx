@@ -12,8 +12,8 @@ import { toast } from "sonner";
 const CATEGORIES = Object.keys(CAT_LABELS);
 const MATERIALS = Object.keys(MAT_LABELS);
 const UNIT_BY_CAT = {
-  column: "m3", reactor: "m3", heat_exchanger: "m2", storage_tank: "m3",
-  pump: "m3/h", compressor: "m3/h", valve: "DN(mm)", instrumentation: "unit", other: "unit",
+  column: "m3", reactor: "m3", vessel: "m3", heat_exchanger: "m2", storage_tank: "m3",
+  pump: "m3/h", compressor: "m3/h", valve: "mm", instrumentation: "unit", other: "unit",
 };
 const POWER_CATS = ["pump", "compressor"];
 

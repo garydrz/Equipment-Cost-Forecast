@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="31" time="3.509" timestamp="2026-08-20T17:46:24.170560+00:00" hostname="agent-env-f83de1bd-c5cb-4ed3-b4fc-98c53fa2673e"><testcase classname="tests.test_it3_fixes.TestValidation" name="test_estimate_rejects_non_positive[weight_kg--5]" time="0.322" /><testcase classname="tests.test_it3_fixes.TestValidation" name="test_estimate_rejects_non_positive[weight_kg-0]" time="0.066" /><testcase classname="tests.test_it3_fixes.TestValidation" name="test_estimate_rejects_non_positive[size--1]" time="0.067" /><testcase classname="tests.test_it3_fixes.TestValidation" name="test_estimate_rejects_non_positive[size-0]" time="0.070" /><testcase classname="tests.test_it3_fixes.TestValidation" name="test_estimate_rejects_non_positive[power_kw--10]" time="0.065" /><testcase classname="tests.test_it3_fixes.TestValidation" name="test_estimate_rejects_non_positive[power_kw-0]" time="0.060" /><testcase classname="tests.test_it3_fixes.TestValidation" name="test_estimate_rejects_non_positive[quantity-0]" time="0.064" /><testcase classname="tests.test_it3_fixes.TestValidation" name="test_estimate_rejects_non_positive[quantity--2]" time="0.064" /><testcase classname="tests.test_it3_fixes.TestValidation" name="test_row_rejects_non_positive[weight_kg--5]" time="0.167" /><testcase classname="tests.test_it3_fixes.TestValidation" name="test_row_rejects_non_positive[size-0]" time="0.075" /><testcase classname="tests.test_it3_fixes.TestValidation" name="test_row_rejects_non_positive[quantity-0]" time="0.080" /><testcase classname="tests.test_it3_fixes.TestValidation" name="test_historical_rejects_non_positive" time="0.103" /><testcase classname="tests.test_it3_fixes.TestFailureShape" name="test_unknown_category_shape" time="0.062" /><testcase classname="tests.test_it3_fixes.TestFailureShape" name="test_no_scaling_variable_shape" time="0.236" /><testcase classname="tests.test_it3_fixes.TestMissingTargetPressure" name="test_estimate_available" time="1.511" /><testcase classname="tests.test_it3_fixes.TestFailureShape" name="test_all_refs_excluded_shape" time="0.130" /><testcase classname="tests.test_it3_fixes.TestMissingTargetPressure" name="test_no_pressure_exclusions" time="0.000" /><testcase classname="tests.test_it3_fixes.TestMissingTargetPressure" name="test_global_warning" time="0.000" /><testcase classname="tests.test_it3_fixes.TestMissingTargetPressure" name="test_reference_pressure_status_and_factor" time="0.000" /><testcase classname="tests.test_it3_fixes.TestMetaAndAdmin" name="test_categories_vessel_meta" time="0.121" /><testcase classname="tests.test_it3_fixes.TestMetaAndAdmin" name="test_indices_source_fred" time="0.148" /><testcase classname="tests.test_it3_fixes.TestMath" name="test_material_factor_ss316_vs_cs" time="0.214" /><testcase classname="tests.test_it3_fixes.TestMetaAndAdmin" name="test_similarity_weights_must_sum_to_one" time="0.185"><failure message="AssertionError: 200 {&quot;ok&quot;:true}&#10;assert 200 == 400&#10; +  where 200 = &lt;Response [200]&gt;.status_code">self = &lt;test_it3_fixes.TestMetaAndAdmin object at 0xfd3999d09950&gt;
+api = &lt;requests.sessions.Session object at 0xfd3999cb8b10&gt;
+base_url = 'https://cost-forecast-hub.preview.emergentagent.com/api'
+
+    def test_similarity_weights_must_sum_to_one(self, api, base_url):
+        cur = api.get(f"{base_url}/admin/similarity-settings", timeout=30).json()
+        bad = {k: v for k, v in cur.items() if k not in ("defaults", "updated_at")}
+        bad["weight_size"] = 0.9
+        bad["weight_material"] = 0.9
+        r = api.put(f"{base_url}/admin/similarity-settings", json=bad, timeout=30)
+&gt;       assert r.status_code == 400, f"{r.status_code} {r.text[:300]}"
+E       AssertionError: 200 {"ok":true}
+E       assert 200 == 400
+E        +  where 200 = &lt;Response [200]&gt;.status_code
+
+tests/test_it3_fixes.py:277: AssertionError</failure></testcase><testcase classname="tests.test_it3_fixes.TestMath" name="test_pressure_factor_formula" time="0.226"><failure message="AssertionError: [{'category': 'column', 'label': 'Distillation Column', 'pressure_exponent': 0.6, 'enabled': True, ...}, {'category': ....5, 'enabled': True, ...}, {'category': 'pump', 'label': 'Pump', 'pressure_exponent': 0.0, 'enabled': False, ...}, ...]&#10;assert None">self = &lt;test_it3_fixes.TestMath object at 0xfb3582466710&gt;
+api = &lt;requests.sessions.Session object at 0xfb3582459810&gt;
+base_url = 'https://cost-forecast-hub.preview.emergentagent.com/api'
+
+    def test_pressure_factor_formula(self, api, base_url):
+        refs = api.get(f"{base_url}/equipment", params={"category": "column"}, timeout=30).json()
+        ref = next(x for x in refs if x["subtype"] == "Distillation packed")
+        cfg = api.get(f"{base_url}/admin/pressure-factors", timeout=30).json()
+        col = cfg["column"] if isinstance(cfg, dict) and "column" in cfg else None
+&gt;       assert col, cfg
+E       AssertionError: [{'category': 'column', 'label': 'Distillation Column', 'pressure_exponent': 0.6, 'enabled': True, ...}, {'category': ....5, 'enabled': True, ...}, {'category': 'pump', 'label': 'Pump', 'pressure_exponent': 0.0, 'enabled': False, ...}, ...]
+E       assert None
+
+tests/test_it3_fixes.py:226: AssertionError</failure></testcase><testcase classname="tests.test_it3_fixes.TestFallbackPath" name="test_column_size_only_estimate_available" time="0.080" /><testcase classname="tests.test_it3_fixes.TestFallbackPath" name="test_no_duplicate_warnings" time="0.526" /><testcase classname="tests.test_it3_fixes.TestMath" name="test_weight_normalization" time="0.130" /><testcase classname="tests.test_it3_fixes.TestVessel" name="test_vessel_estimate" time="0.107" /><testcase classname="tests.test_it3_fixes.TestVessel" name="test_vessel_refs_exist" time="0.174" /><testcase classname="tests.test_it3_fixes.TestDummyProject" name="test_recompute_and_row_quality" time="0.244"><failure message="KeyError: 'total_expected'">self = &lt;test_it3_fixes.TestDummyProject object at 0xfd3999d02b10&gt;
+api = &lt;requests.sessions.Session object at 0xfd3999cb8b10&gt;
+base_url = 'https://cost-forecast-hub.preview.emergentagent.com/api'
+
+    def test_recompute_and_row_quality(self, api, base_url):
+        projects = api.get(f"{base_url}/projects", timeout=30).json()
+        dummy = next((p for p in projects if "DUMMY" in (p.get("name") or "").upper()), None)
+        if dummy is None:
+            pytest.skip("no DUMMY project present")
+        rc = api.post(f"{base_url}/projects/{dummy['id']}/recompute", timeout=120)
+        assert rc.status_code == 200, rc.text
+        detail = api.get(f"{base_url}/projects/{dummy['id']}", timeout=60).json()
+        rows = detail["rows"]
+        assert rows
+        bad = []
+        for row in rows:
+            if not row.get("estimate_available") or (row.get("references_used") or 0) &lt;= 0:
+                bad.append({"tag": row.get("tag"), "cat": row.get("category"),
+                            "avail": row.get("estimate_available"),
+                            "refs": row.get("references_used"),
+                            "warn": row.get("warnings"), "err": row.get("errors")})
+        assert not bad, f"rows without a usable estimate: {bad}"
+&gt;       assert detail["totals"]["total_expected"] &gt; 0
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'total_expected'
+
+tests/test_it3_fixes.py:204: KeyError</failure></testcase><testcase classname="tests.test_it3_fixes.TestRowSanitization" name="test_valve_power_kw_sanitized" time="0.276" /></testsuite></testsuites>

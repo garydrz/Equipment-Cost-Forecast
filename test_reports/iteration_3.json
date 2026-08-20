@@ -1,0 +1,38 @@
+{
+  "summary": "Iteration-3 backend re-test of the weighted_similarity_v2 fixes via the public URL. Tightened the 3 previously relaxed assertions in /app/backend/tests/backend_test.py (column fallback, vessel refs, legacy key name) and added a new strict suite /app/backend/tests/test_it3_fixes.py (31 tests) covering all 14 requested scenarios. Full run: 68/68 pass. Verified strictly: (1) column with only size=50 -> estimate_available=true, scaling_variable='size', scaling_variable_is_fallback=true, references_used=2, no 'incompatible scaling variable' exclusions, fallback warning present; (2) pressure-enabled column WITHOUT design_pressure_bar -> estimate_available=true, zero pressure-related exclusions, exactly ONE global warning 'target design pressure missing; pressure factor not applied', every references_detail entry has pressure_status='skipped-target-pressure-missing' and applied_pressure_factor=1.0; (3) vessel weight_kg=20000/carbon_steel/15barg -> estimate_available=true, references_used=2, expected=243634.61, both seeded refs (Horizontal separator, Vertical KO drum) present via GET /equipment?category=vessel; (4) gt=0/ge=1 validation returns 422 for weight_kg=-5/0, size=-1/0, power_kw=-10/0, quantity=0/-2 on /api/estimate and /api/projects/{pid}/rows, and for size=-3 on POST /api/equipment; (5) unified failure shape confirmed by actually deleting both vessel references (then restoring them) -> estimate_available=false with expected/low/high/sigma/total_expected/total_low/total_high=null, references_used=0, references_excluded present, 'excluded_references' key absent, scaling_variable/scaling_variable_is_fallback and model_version='weighted_similarity_v2' present; same shape for unknown category and 'other'; (6) DUMMY project recompute -> all 8 rows have estimate_available=true and references_used>0, totals.expected>0; (7) PUT /api/admin/similarity-settings with w_size=0.9+w_material=0.9 -> HTTP 400 and config unchanged; (8) F_material SS316 vs carbon_steel == 2.1 exactly; (9) F_pressure == ((25+atm)/(8+atm))^0.6 within 1%; (10) sum(normalized_weight)=1.0 +/-0.01 and expected==sum(weighted_contribution) within 0.1%; (11) GET /meta/categories includes vessel with primary_variable=weight_kg, fallback_variable=size; (12) GET /indices source='FRED' with populated steel/oil series; (13) valve row with power_kw=100 saved as power_kw=None; (14) warnings de-duplicated (no repeats in FX-fallback USD case).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "app startup/shutdown", "issue": "Still uses deprecated @app.on_event('startup'/'shutdown') (server.py:1506,1513); migrate to the lifespan context manager."},
+      {"endpoint": "POST /api/estimate", "issue": "n_eff (float effective sample size, line 916) is still compared against sim['min_references'] (an integer count) at line 929 - semantically mixed, warning-only impact."},
+      {"endpoint": "POST /api/estimate", "issue": "Success response still exposes both 'references_excluded' (list) and 'excluded_references_count' (line 973); the count key name is inconsistent with the list key name."}
+    ]
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_it3_fixes.py",
+    "/app/backend/tests/backend_test.py",
+    "/app/backend/tests/probe_failure_shape.py",
+    "/app/test_reports/pytest/it3_full.xml"
+  ],
+  "action_items": [
+    "Optional cleanup only: migrate on_event -> lifespan; rename 'excluded_references_count' -> 'references_excluded_count'; compare min_references against the integer reference count (or rename the setting to min_effective_sample_size).",
+    "Optional: split server.py (1516 lines) into models / estimation engine / routes / seed modules."
+  ],
+  "critical_code_review_comments": [
+    "All 7 reported fixes are present and behave as specified: force_use_fallback in get_scaling_variable (line 533), name-only compatibility check (line 684), pressure skip path (line 750, pressure_status='skipped-target-pressure-missing'), single _unavailable() helper (line 583) used by every early-return branch, vessel seed rows (lines 1428-1429), warning de-duplication (line 934 and in _unavailable), dead no-op loop removed from _sanitize_row_payload.",
+    "Weighted sigma remains the biased weighted variance with low clipped at 0; with 2 references the +/-1.645*sigma bracket can still collapse toward [0, 2*expected]. Consider an n_eff-based small-sample correction (not a blocker).",
+    "get_similarity_config still merges the persisted 'updated_at' field into the config returned by GET /admin/similarity-settings; clients must strip it before PUT-ing back."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py",
+    "/app/backend/tests/test_it3_fixes.py",
+    "/app/backend/tests/probe_failure_shape.py"
+  ],
+  "success_rate": {"backend": "100% (68/68 pytest tests pass)", "frontend": "not tested (backend-only request)"},
+  "seed_data_creation": "Temp projects 'TEST_it2_project' and 'TEST_it3_project' created and deleted by fixtures. Both vessel references were deleted and re-created by probe_failure_shape.py to verify the failure shape - verified restored (Horizontal separator 22000kg CS@15barg, Vertical KO drum 16000kg SS316@20barg; new ids). Similarity config verified unchanged after the 400-rejection test. Only the DUMMY project remains.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Run: cd /app/backend && python -m pytest tests/ -q (pytest.ini uses xdist -n 2 --dist loadscope). Keep every global similarity-config mutation inside a single test class (loadscope) or parallel workers will reset config mid-test. tests/probe_failure_shape.py is a manual, destructive-but-self-restoring script (deletes and re-creates vessel refs) - not collected by pytest. Similarity weight field names are w_size/w_subtype/w_material/w_pressure; GET /admin/pressure-factors returns a LIST of category objects; GET /projects/{id} totals keys are expected/low/high/sigma (not total_expected).",
+  "rca_of_the_issue": "No new defects. Two of the three initial failures in the new suite were my own test-harness mistakes (wrong config field names w_size vs weight_size, and totals.expected vs totals.total_expected) and were fixed in the test file; the third was the outdated iteration_2 assertion that asserted the old buggy 'incompatible scaling variable' exclusion behaviour, now inverted to assert the fixed behaviour."
+}
