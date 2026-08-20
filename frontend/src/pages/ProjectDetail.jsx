@@ -6,6 +6,7 @@ import { AaceBadge } from "@/components/AaceBadge";
 import { Plus, Trash, ArrowLeft, Warning, ArrowsClockwise } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import EquipmentRowDialog from "@/components/EquipmentRowDialog";
+import CostDriversChart from "@/components/CostDriversChart";
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -87,6 +88,9 @@ export default function ProjectDetail() {
         <SummaryTile label="Upper Bound" value={formatMoney(totals.high, ccy)} testId="stat-high" />
         <SummaryTile label="AACE Class" custom={<AaceBadge value={totals.aace_class} testId="stat-aace" />} sub={`σ = ${formatMoney(totals.sigma, ccy)}`} />
       </div>
+
+      {/* Cost drivers chart */}
+      <CostDriversChart rows={rows} currency={ccy} />
 
       {/* Rows table */}
       <div className="border border-border bg-white overflow-x-auto">

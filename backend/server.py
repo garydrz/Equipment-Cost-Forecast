@@ -324,13 +324,11 @@ def project_aace(row_classes: list) -> str:
     return max(row_classes, key=lambda c: order.get(c, 5))
 
 async def find_candidates(category: str, subtype: Optional[str], material: Optional[str] = None):
+    """Return ALL historical records of the same category. Subtype is kept for
+    informational purposes only — per user requirement, the estimate must
+    average across all equipment of the same type in the repository."""
     q = {"category": category}
     docs = await db.equipment_historical.find(q, {"_id": 0}).to_list(1000)
-    # prefer subtype match
-    if subtype:
-        matched = [d for d in docs if (d.get("subtype") or "").lower() == subtype.lower()]
-        if matched:
-            docs = matched
     return docs
 
 async def estimate_single(
