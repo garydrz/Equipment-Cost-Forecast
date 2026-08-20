@@ -1,4 +1,135 @@
-python -m pip install --upgrade pip setuptools wheel
-python -m pip install --only-binary=:all: numpy pandas
-python -m pip install fastapi uvicorn pydantic httpx openpyxl
-python -c "import fastapi, uvicorn, pydantic, httpx, pandas, openpyxl; print('TUTTO OK')"
+(.venv) PS C:\Users\SA2017752\Downloads\equipment-cost-forecast-local> python -m pip install fastapi uvicorn pydantic httpx openpyxl
+Collecting fastapi
+  Using cached fastapi-0.141.1-py3-none-any.whl.metadata (27 kB)
+Collecting uvicorn
+  Using cached uvicorn-0.52.4-py3-none-any.whl.metadata (6.6 kB)
+Collecting pydantic
+  Using cached pydantic-2.13.4-py3-none-any.whl.metadata (109 kB)
+Collecting httpx
+  Using cached httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+Collecting openpyxl
+  Using cached openpyxl-3.1.5-py2.py3-none-any.whl.metadata (2.5 kB)
+Collecting starlette>=0.46.0 (from fastapi)
+  Downloading starlette-1.6.0-py3-none-any.whl.metadata (6.4 kB)
+Collecting typing-extensions>=4.8.0 (from fastapi)
+  Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting typing-inspection>=0.4.2 (from fastapi)
+  Downloading typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+Collecting annotated-doc>=0.0.2 (from fastapi)
+  Downloading annotated_doc-0.0.5-py3-none-any.whl.metadata (6.5 kB)
+Requirement already satisfied: click>=7.0 in .\.venv\Lib\site-packages (from uvicorn) (8.4.2)
+Collecting h11>=0.8 (from uvicorn)
+  Using cached h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+Collecting annotated-types>=0.6.0 (from pydantic)
+  Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+Collecting pydantic-core==2.46.4 (from pydantic)
+  Downloading pydantic_core-2.46.4.tar.gz (471 kB)
+  Installing build dependencies ... done
+  Getting requirements to build wheel ... done
+  Installing backend dependencies ... done
+  Preparing metadata (pyproject.toml) ... error
+  error: subprocess-exited-with-error
+  
+  × Preparing metadata (pyproject.toml) did not run successfully.
+  │ exit code: 1
+  ╰─> [90 lines of output]
+      Python reports SOABI: cp313t-win_amd64
+      Computed rustc target triple: x86_64-pc-windows-msvc
+      Installation directory: C:\Users\SA2017752\AppData\Local\puccinialin\puccinialin\Cache
+      Downloading rustup-init from https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe
+      Checking for Rust toolchain....
+      Rust not found, installing into a temporary directory
+      Traceback (most recent call last):
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\httpx\_transports\default.py", line 101, in map_httpcore_exceptions
+          yield
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\httpx\_transports\default.py", line 250, in handle_request
+          resp = self._pool.handle_request(req)
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\httpcore\_sync\connection_pool.py", line 256, in handle_request
+          raise exc from None
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\httpcore\_sync\connection_pool.py", line 236, in handle_request
+          response = connection.handle_request(
+              pool_request.request
+          )
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\httpcore\_sync\connection.py", line 101, in handle_request
+          raise exc
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\httpcore\_sync\connection.py", line 78, in handle_request
+          stream = self._connect(request)
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\httpcore\_sync\connection.py", line 156, in _connect
+          stream = stream.start_tls(**kwargs)
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\httpcore\_backends\sync.py", line 154, in start_tls
+          with map_exceptions(exc_map):
+               ~~~~~~~~~~~~~~^^^^^^^^^
+        File "C:\Program Files\Python313\Lib\contextlib.py", line 162, in __exit__
+          self.gen.throw(value)
+          ~~~~~~~~~~~~~~^^^^^^^
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\httpcore\_exceptions.py", line 14, in map_exceptions
+          raise to_exc(exc) from exc
+      httpcore.ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1020)
+      
+      The above exception was the direct cause of the following exception:
+      
+      Traceback (most recent call last):
+        File "C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\.venv\Lib\site-packages\pip\_vendor\pyproject_hooks\_in_process\_in_process.py", line 389, in <module>
+          main()
+          ~~~~^^
+        File "C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\.venv\Lib\site-packages\pip\_vendor\pyproject_hooks\_in_process\_in_process.py", line 373, in main
+          json_out["return_val"] = hook(**hook_input["kwargs"])
+                                   ~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+        File "C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\.venv\Lib\site-packages\pip\_vendor\pyproject_hooks\_in_process\_in_process.py", line 175, in prepare_metadata_for_build_wheel
+          return hook(metadata_directory, config_settings)
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\overlay\Lib\site-packages\maturin\__init__.py", line 202, in prepare_metadata_for_build_wheel
+          env = _get_env()
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\overlay\Lib\site-packages\maturin\__init__.py", line 83, in _get_env
+          extra_env = setup_rust()
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\puccinialin\_setup_rust.py", line 143, in setup_rust
+          rustup_init = download_rustup(url, rustup_init, target, file)
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\puccinialin\_setup_rust.py", line 34, in download_rustup
+          response = client.head(url)
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\httpx\_client.py", line 1111, in head
+          return self.request(
+                 ~~~~~~~~~~~~^
+              "HEAD",
+              ^^^^^^^
+          ...<7 lines>...
+              extensions=extensions,
+              ^^^^^^^^^^^^^^^^^^^^^^
+          )
+          ^
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\httpx\_client.py", line 825, in request
+          return self.send(request, auth=auth, follow_redirects=follow_redirects)
+                 ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\httpx\_client.py", line 914, in send
+          response = self._send_handling_auth(
+              request,
+          ...<2 lines>...
+              history=[],
+          )
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\httpx\_client.py", line 942, in _send_handling_auth
+          response = self._send_handling_redirects(
+              request,
+              follow_redirects=follow_redirects,
+              history=history,
+          )
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\httpx\_client.py", line 979, in _send_handling_redirects
+          response = self._send_single_request(request)
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\httpx\_client.py", line 1014, in _send_single_request
+          response = transport.handle_request(request)
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\httpx\_transports\default.py", line 249, in handle_request
+          with map_httpcore_exceptions():
+               ~~~~~~~~~~~~~~~~~~~~~~~^^
+        File "C:\Program Files\Python313\Lib\contextlib.py", line 162, in __exit__
+          self.gen.throw(value)
+          ~~~~~~~~~~~~~~^^^^^^^
+        File "C:\Users\SA2017752\AppData\Local\Temp\pip-build-env-g5eld5nq\normal\Lib\site-packages\httpx\_transports\default.py", line 118, in map_httpcore_exceptions
+          raise mapped_exc(message) from exc
+      httpx.ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1020)
+      [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+error: metadata-generation-failed
+
+× Encountered error while generating package metadata.
+╰─> pydantic-core
+
+note: This is an issue with the package mentioned above, not pip.
+hint: See above for details.
