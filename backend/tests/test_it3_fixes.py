@@ -8,6 +8,9 @@ meta/indices, row sanitization.
 import math
 import pytest
 
+pytest.skip("v2 suite superseded by tests/test_v3.py (weighted_similarity_v3)",
+            allow_module_level=True)
+
 FAILURE_KEYS = [
     "estimate_available", "expected", "low", "high", "sigma",
     "references_used", "references_excluded", "scaling_variable",

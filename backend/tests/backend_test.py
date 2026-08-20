@@ -1,7 +1,16 @@
 """
 Backend tests - EPC parametric cost estimator v2 (weighted_similarity_v2)
 Covers: meta, admin config (material/pressure/similarity), estimate math, rows, projects, indices.
+
+SUPERSEDED (iteration 4): backend is now weighted_similarity_v3 with a rigid
+category+subtype filter and a different range model, so this v2 suite is skipped.
+Use tests/test_v3.py instead.
 """
+import pytest
+
+pytest.skip("v2 suite superseded by tests/test_v3.py (weighted_similarity_v3)",
+            allow_module_level=True)
+
 import math
 import pytest
 

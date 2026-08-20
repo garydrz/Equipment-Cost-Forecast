@@ -86,20 +86,47 @@ export default function ProjectDetail() {
       </div>
 
       {/* Summary bento */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 mb-8 border border-border">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 mb-4 border border-border">
         <SummaryTile label="Expected Cost" value={formatMoney(totals.expected, ccy)} highlight testId="stat-expected" />
-        <SummaryTile label="Lower Bound" value={formatMoney(totals.low, ccy)} testId="stat-low" />
-        <SummaryTile label="Upper Bound" value={formatMoney(totals.high, ccy)} testId="stat-high" />
+        <SummaryTile label="Lower Bound" value={totals.low != null ? formatMoney(totals.low, ccy) : "—"} testId="stat-low" />
+        <SummaryTile label="Upper Bound" value={totals.high != null ? formatMoney(totals.high, ccy) : "—"} testId="stat-high" />
         <div className="p-5 border-r border-b border-border last:border-r-0 bg-white" data-testid="stat-aace">
-          <div className="text-[10px] uppercase tracking-widest text-slate-500 mb-2">AACE Class</div>
+          <div className="text-[10px] uppercase tracking-widest text-slate-500 mb-2">AACE Class (metadata)</div>
           <Select value={project.aace_class} onValueChange={setAaceClass}>
             <SelectTrigger className="rounded-none h-9 w-full" data-testid="aace-class-select"><SelectValue /></SelectTrigger>
             <SelectContent>
               {AACE_CLASSES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
             </SelectContent>
           </Select>
-          <div className="text-xs text-slate-500 font-mono-num mt-2">σ = {formatMoney(totals.sigma, ccy)}</div>
+          <div className="text-xs text-slate-500 font-mono-num mt-2">σ = {totals.sigma_project != null ? formatMoney(totals.sigma_project, ccy) : "—"}</div>
         </div>
+      </div>
+
+      {/* Reliability range info */}
+      <div className="border border-border bg-slate-50 p-4 mb-6 text-xs" data-testid="reliability-range-info">
+        <div className="grid grid-cols-4 gap-3">
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-slate-500">Range method</div>
+            <div className="font-mono-num text-slate-900">Weighted mean ± z σ</div>
+          </div>
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-slate-500">Confidence level</div>
+            <div className="font-mono-num text-slate-900">{totals.confidence_level}% (z = {totals.z_value})</div>
+          </div>
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-slate-500">Rows with sigma</div>
+            <div className="font-mono-num text-slate-900">{totals.rows_with_valid_sigma} / {totals.rows_with_valid_sigma + totals.rows_without_valid_sigma}</div>
+          </div>
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-slate-500">ρ intra / inter</div>
+            <div className="font-mono-num text-slate-900">{totals.rho_quantity} / {totals.rho_between_rows}</div>
+          </div>
+        </div>
+        {(totals.warnings || []).length > 0 && (
+          <div className="mt-2 text-amber-700 space-y-0.5">
+            {totals.warnings.map((w, i) => <div key={i}>⚠ {w}</div>)}
+          </div>
+        )}
       </div>
 
       {/* Cost drivers chart */}
@@ -147,7 +174,9 @@ export default function ProjectDetail() {
                 <td className="px-3 py-2 text-right font-mono-num text-slate-900">{formatMoney(r.unit_expected_cost, ccy)}</td>
                 <td className="px-3 py-2 text-right font-mono-num font-semibold text-slate-900">{formatMoney(r.total_expected_cost, ccy)}</td>
                 <td className="px-3 py-2 text-right font-mono-num text-xs text-slate-500">
-                  {formatMoney(r.unit_low * r.quantity, ccy)} — {formatMoney(r.unit_high * r.quantity, ccy)}
+                  {r.unit_low != null && r.unit_high != null
+                    ? `${formatMoney(r.unit_low * r.quantity, ccy)} — ${formatMoney(r.unit_high * r.quantity, ccy)}`
+                    : "—"}
                 </td>
                 <td className="px-3 py-2 text-center font-mono-num text-xs">{formatNum(r.effective_sample_size, 1)}</td>
                 <td className="px-3 py-2 text-center font-mono-num text-xs text-slate-600">

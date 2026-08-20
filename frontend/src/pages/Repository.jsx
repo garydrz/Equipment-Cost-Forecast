@@ -1,26 +1,30 @@
 import { useEffect, useState } from "react";
-import { api, CAT_LABELS, MAT_LABELS, formatMoney } from "@/lib/api";
+import { api, CAT_LABELS, MAT_LABELS, formatMoney, getMeta } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Trash, PencilSimple, MagnifyingGlass } from "@phosphor-icons/react";
+import { Plus, Trash, PencilSimple, MagnifyingGlass, ArrowsClockwise } from "@phosphor-icons/react";
 import { toast } from "sonner";
 
 const CATEGORIES = Object.keys(CAT_LABELS);
 const MATERIALS = Object.keys(MAT_LABELS);
 const UNIT_BY_CAT = {
   column: "m3", reactor: "m3", vessel: "m3", heat_exchanger: "m2", storage_tank: "m3",
-  pump: "m3/h", compressor: "m3/h", valve: "mm", instrumentation: "unit", other: "unit",
+  pump: "m3/h", compressor: "m3/h", valve: "mm", instrumentation: "unit", burner: "kW", other: "unit",
 };
 const POWER_CATS = ["pump", "compressor"];
+const FLOW_HEAD_CATS = ["pump"];
+const DUTY_CATS = ["burner"];
 
 const EMPTY = {
   category: "column", subtype: "", size: "", size_unit: "m3",
   weight_kg: "", material: "carbon_steel",
   design_pressure_bar: "", design_temperature_c: "", power_kw: "",
+  flow_rate_m3_h: "", head_m: "", pump_efficiency: "", fluid_density_kg_m3: "",
+  thermal_duty_kw: "", fuel_flow_kg_h: "",
   year: new Date().getFullYear() - 1, cost_original: "", currency: "EUR",
   vendor_country: "", install_country: "", notes: "",
 };
@@ -32,6 +36,9 @@ export default function Repository() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
+  const [subtypesByCat, setSubtypesByCat] = useState({});
+
+  useEffect(() => { getMeta().then((m) => setSubtypesByCat(m.subtypes || {})); }, []);
 
   const load = async () => {
     try {
@@ -60,7 +67,11 @@ export default function Repository() {
       size_unit: r.size_unit, weight_kg: r.weight_kg ?? "", material: r.material,
       design_pressure_bar: r.design_pressure_bar ?? "",
       design_temperature_c: r.design_temperature_c ?? "",
-      power_kw: r.power_kw ?? "", year: r.year, cost_original: r.cost_original,
+      power_kw: r.power_kw ?? "",
+      flow_rate_m3_h: r.flow_rate_m3_h ?? "", head_m: r.head_m ?? "",
+      pump_efficiency: r.pump_efficiency ?? "", fluid_density_kg_m3: r.fluid_density_kg_m3 ?? "",
+      thermal_duty_kw: r.thermal_duty_kw ?? "", fuel_flow_kg_h: r.fuel_flow_kg_h ?? "",
+      year: r.year, cost_original: r.cost_original,
       currency: r.currency, vendor_country: r.vendor_country || "",
       install_country: r.install_country || "", notes: r.notes || "",
     });
@@ -68,18 +79,29 @@ export default function Repository() {
   };
 
   const save = async () => {
-    if (!form.size || Number(form.size) <= 0) { toast.error("Size required"); return; }
+    if (!form.subtype) { toast.error("Subtype required"); return; }
+    // For pump/burner, size can be derived from flow_rate/thermal_duty
+    let sizeVal = form.size;
+    if (FLOW_HEAD_CATS.includes(form.category) && !sizeVal && form.flow_rate_m3_h) sizeVal = form.flow_rate_m3_h;
+    if (DUTY_CATS.includes(form.category) && !sizeVal && form.thermal_duty_kw) sizeVal = form.thermal_duty_kw;
+    if (!sizeVal || Number(sizeVal) <= 0) { toast.error("Size (or Flow rate / Thermal duty) required"); return; }
     if (!form.cost_original || Number(form.cost_original) <= 0) { toast.error("Cost required"); return; }
     const payload = {
       category: form.category,
-      subtype: form.subtype || null,
-      size: Number(form.size),
-      size_unit: form.size_unit,
+      subtype: form.subtype,
+      size: Number(sizeVal),
+      size_unit: form.size_unit || UNIT_BY_CAT[form.category] || "unit",
       weight_kg: form.weight_kg === "" ? null : Number(form.weight_kg),
       material: form.material,
       design_pressure_bar: form.design_pressure_bar === "" ? null : Number(form.design_pressure_bar),
       design_temperature_c: form.design_temperature_c === "" ? null : Number(form.design_temperature_c),
       power_kw: form.power_kw === "" ? null : Number(form.power_kw),
+      flow_rate_m3_h: form.flow_rate_m3_h === "" ? null : Number(form.flow_rate_m3_h),
+      head_m: form.head_m === "" ? null : Number(form.head_m),
+      pump_efficiency: form.pump_efficiency === "" ? null : Number(form.pump_efficiency),
+      fluid_density_kg_m3: form.fluid_density_kg_m3 === "" ? null : Number(form.fluid_density_kg_m3),
+      thermal_duty_kw: form.thermal_duty_kw === "" ? null : Number(form.thermal_duty_kw),
+      fuel_flow_kg_h: form.fuel_flow_kg_h === "" ? null : Number(form.fuel_flow_kg_h),
       year: Number(form.year),
       cost_original: Number(form.cost_original),
       currency: form.currency,
@@ -98,7 +120,7 @@ export default function Repository() {
       setDialogOpen(false);
       load();
     } catch (e) {
-      toast.error("Save failed");
+      toast.error(e?.response?.data?.detail || "Save failed");
     }
   };
 
@@ -111,11 +133,23 @@ export default function Repository() {
     } catch (e) { toast.error("Delete failed"); }
   };
 
+  const migrate = async () => {
+    if (!window.confirm("Run subtype migration to canonical values?")) return;
+    try {
+      const { data } = await api.post("/equipment/migrate-subtypes");
+      toast.success(`Migrated ${data.updated} record(s). ${data.needs_review.length} need review.`);
+      load();
+    } catch (e) { toast.error("Migration failed"); }
+  };
+
   const onCategoryChange = (cat) => {
-    setForm((f) => ({ ...f, category: cat, size_unit: UNIT_BY_CAT[cat] || "unit" }));
+    setForm((f) => ({ ...f, category: cat, subtype: "", size_unit: UNIT_BY_CAT[cat] || "unit" }));
   };
 
   const showPower = POWER_CATS.includes(form.category);
+  const showFlowHead = FLOW_HEAD_CATS.includes(form.category);
+  const showDuty = DUTY_CATS.includes(form.category);
+  const subtypes = subtypesByCat[form.category] || [];
 
   return (
     <div className="p-8 max-w-7xl">
@@ -125,9 +159,14 @@ export default function Repository() {
           <h1 className="font-heading text-3xl font-semibold tracking-tight text-slate-900 klein-underline">Historical Repository</h1>
           <p className="text-sm text-slate-600 mt-3 max-w-2xl">Reference database used to generate parametric cost estimates via AACE capacity factor method.</p>
         </div>
-        <Button onClick={openAdd} className="rounded-none bg-[#002FA7] hover:bg-[#002480] text-white h-10 px-5" data-testid="add-equipment-record-btn">
-          <Plus size={16} className="mr-2" /> Add Record
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={migrate} className="rounded-none h-10" data-testid="migrate-btn">
+            <ArrowsClockwise size={14} className="mr-2" /> Migrate Subtypes
+          </Button>
+          <Button onClick={openAdd} className="rounded-none bg-[#002FA7] hover:bg-[#002480] text-white h-10 px-5" data-testid="add-equipment-record-btn">
+            <Plus size={16} className="mr-2" /> Add Record
+          </Button>
+        </div>
       </div>
 
       <div className="flex gap-3 mb-4">
@@ -197,8 +236,11 @@ export default function Repository() {
               </Select>
             </div>
             <div>
-              <Label className="text-xs uppercase tracking-wider">Subtype</Label>
-              <Input value={form.subtype} onChange={(e) => setForm({ ...form, subtype: e.target.value })} className="rounded-none mt-1" data-testid="repo-form-subtype" />
+              <Label className="text-xs uppercase tracking-wider">Subtype *</Label>
+              <Select value={form.subtype} onValueChange={(v) => setForm({ ...form, subtype: v })}>
+                <SelectTrigger className="rounded-none mt-1" data-testid="repo-form-subtype"><SelectValue placeholder="Select…" /></SelectTrigger>
+                <SelectContent>{subtypes.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              </Select>
             </div>
             <div>
               <Label className="text-xs uppercase tracking-wider">Material</Label>
@@ -211,6 +253,30 @@ export default function Repository() {
               <Label className="text-xs uppercase tracking-wider">Size ({form.size_unit})</Label>
               <Input type="number" value={form.size} onChange={(e) => setForm({ ...form, size: e.target.value })} className="rounded-none mt-1 font-mono-num" data-testid="repo-form-size" />
             </div>
+            {showFlowHead && (
+              <>
+                <div>
+                  <Label className="text-xs uppercase tracking-wider">Flow Rate (m³/h) *</Label>
+                  <Input type="number" value={form.flow_rate_m3_h} onChange={(e) => setForm({ ...form, flow_rate_m3_h: e.target.value })} className="rounded-none mt-1 font-mono-num" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase tracking-wider">Head (m) *</Label>
+                  <Input type="number" value={form.head_m} onChange={(e) => setForm({ ...form, head_m: e.target.value })} className="rounded-none mt-1 font-mono-num" />
+                </div>
+              </>
+            )}
+            {showDuty && (
+              <>
+                <div>
+                  <Label className="text-xs uppercase tracking-wider">Thermal Duty (kW) *</Label>
+                  <Input type="number" value={form.thermal_duty_kw} onChange={(e) => setForm({ ...form, thermal_duty_kw: e.target.value })} className="rounded-none mt-1 font-mono-num" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase tracking-wider">Fuel Flow (kg/h)</Label>
+                  <Input type="number" value={form.fuel_flow_kg_h} onChange={(e) => setForm({ ...form, fuel_flow_kg_h: e.target.value })} className="rounded-none mt-1 font-mono-num" />
+                </div>
+              </>
+            )}
             <div>
               <Label className="text-xs uppercase tracking-wider">Weight (kg)</Label>
               <Input type="number" value={form.weight_kg} onChange={(e) => setForm({ ...form, weight_kg: e.target.value })} className="rounded-none mt-1 font-mono-num" />
