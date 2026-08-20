@@ -1,0 +1,2 @@
+ERROR: missing Python packages: fastapi, uvicorn, pydantic, httpx, pandas, openpyxl
+Install them with:  pip install -r requirements.txt
