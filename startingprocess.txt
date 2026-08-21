@@ -1,0 +1,21 @@
+# in terminal
+# (.venv) PS C:\Users\SA2017752\Downloads\equipment-cost-forecast-local
+
+python -m venv .venv
+
+.venv\Scripts\activate
+
+pip install -r requirements.txt
+
+#poi in ...\frontend
+
+cd frontend
+
+yarn install
+
+yarn build
+
+#poi
+
+cd ..
+python main.py

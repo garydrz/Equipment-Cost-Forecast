@@ -1,0 +1,34 @@
+2026-08-20 22:12:20,794 - INFO - EPC Estimator — local launcher
+2026-08-20 22:12:20,843 - INFO - Data directory: C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\data
+2026-08-20 22:12:20,844 - INFO - Database file:  data/epc_estimator.db
+2026-08-20 22:12:20,844 - INFO - Config file:    C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\config\app_config.json
+2026-08-20 22:12:20,844 - INFO - Offline mode:   False
+2026-08-20 22:12:20,844 - WARNING - Frontend build folder not found at C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\frontend\build. The API will still work, but you'll need to build the SPA (cd frontend && yarn install && yarn build) to use the UI locally.
+2026-08-20 22:12:20,845 - INFO - Starting server on http://localhost:8000
+2026-08-20 22:13:53,125 - INFO - EPC Estimator — local launcher
+2026-08-20 22:13:53,127 - INFO - Data directory: C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\data
+2026-08-20 22:13:53,128 - INFO - Database file:  data/epc_estimator.db
+2026-08-20 22:13:53,128 - INFO - Config file:    C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\config\app_config.json
+2026-08-20 22:13:53,129 - INFO - Offline mode:   False
+2026-08-20 22:13:53,129 - WARNING - Frontend build folder not found at C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\frontend\build. The API will still work, but you'll need to build the SPA (cd frontend && yarn install && yarn build) to use the UI locally.
+2026-08-20 22:13:53,130 - INFO - Starting server on http://localhost:8000
+2026-08-20 22:14:31,063 - INFO - EPC Estimator — local launcher
+2026-08-20 22:14:31,065 - INFO - Data directory: C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\data
+2026-08-20 22:14:31,066 - INFO - Database file:  data/epc_estimator.db
+2026-08-20 22:14:31,066 - INFO - Config file:    C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\config\app_config.json
+2026-08-20 22:14:31,066 - INFO - Offline mode:   False
+2026-08-20 22:14:31,066 - WARNING - Frontend build folder not found at C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\frontend\build. The API will still work, but you'll need to build the SPA (cd frontend && yarn install && yarn build) to use the UI locally.
+2026-08-20 22:14:31,067 - INFO - Starting server on http://localhost:8000
+2026-08-21 13:18:59,831 - INFO - EPC Estimator — local launcher
+2026-08-21 13:18:59,860 - INFO - Data directory: C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\data
+2026-08-21 13:18:59,861 - INFO - Database file:  data/epc_estimator.db
+2026-08-21 13:18:59,861 - INFO - Config file:    C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\config\app_config.json
+2026-08-21 13:18:59,861 - INFO - Offline mode:   False
+2026-08-21 13:18:59,862 - WARNING - Frontend build folder not found at C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\frontend\build. The API will still work, but you'll need to build the SPA (cd frontend && yarn install && yarn build) to use the UI locally.
+2026-08-21 13:18:59,862 - INFO - Starting server on http://localhost:8000
+2026-08-21 13:28:29,232 - INFO - EPC Estimator — local launcher
+2026-08-21 13:28:29,265 - INFO - Data directory: C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\data
+2026-08-21 13:28:29,266 - INFO - Database file:  data/epc_estimator.db
+2026-08-21 13:28:29,266 - INFO - Config file:    C:\Users\SA2017752\Downloads\equipment-cost-forecast-local\config\app_config.json
+2026-08-21 13:28:29,267 - INFO - Offline mode:   False
+2026-08-21 13:28:29,268 - INFO - Starting server on http://localhost:8000

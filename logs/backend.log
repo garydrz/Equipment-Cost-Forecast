@@ -1,0 +1,7 @@
+2026-08-20 22:13:53,577 - fastapi - ERROR - Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
+2026-08-21 13:29:19,485 - httpx - INFO - HTTP Request: GET https://api.stlouisfed.org/fred/series/observations?series_id=DCOILBRENTEU&api_key=6d2c53615d6f7ec0638979a8cd48aab7&file_type=json&frequency=a&aggregation_method=avg&observation_start=2000-01-01 "HTTP/1.1 200 OK"
+2026-08-21 13:29:19,589 - httpx - INFO - HTTP Request: GET https://api.stlouisfed.org/fred/series/observations?series_id=WPU101706&api_key=6d2c53615d6f7ec0638979a8cd48aab7&file_type=json&frequency=a&aggregation_method=avg&observation_start=2000-01-01 "HTTP/1.1 200 OK"
